@@ -108,3 +108,6 @@ It replaces manual effort with automation, reduces inconsistency, and enables te
 As systems continue to grow in complexity, approaches like IaC are not just useful — they are necessary.
 
 For anyone serious about DevOps, learning Infrastructure as Code is the best place to start.
+![Terraform Version setup](images/terraform-version.png)
+
+![AWSsts setup](images/terraform-diagram.png)
