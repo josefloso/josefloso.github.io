@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terraform + AWS CLI Setup (No Fluff)</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; margin: 2rem; }
+        h1, h2 { color: #333; }
+        pre { background: #f4f4f4; padding: 1rem; overflow-x: auto; }
+        code { font-family: monospace; }
+        ul { margin: 1rem 0; }
+        li { margin-bottom: 0.5rem; }
+        hr { margin: 2rem 0; border: 0; border-top: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <h1>Terraform + AWS CLI Setup (No Fluff)</h1>
+
+    <h2>Introduction</h2>
+    <p>This step by step instruction guide is meant to walk you through setting up Terraform with AWS CLI so that you can provision infrastructure from code instead of manually clicking through an AWS console. Minimize the manual stuff, automate the actual stuff.</p>
+    <p>Steps include:</p>
+    <ul>
+        <li>Install Terraform</li>
+        <li>Configure AWS CLI</li>
+        <li>Set up credentials</li>
+        <li>Deploy a simple resource</li>
+    </ul>
+
+    <hr>
+
+    <h2>Prerequisites</h2>
+    <ul>
+        <li>AWS account</li>
+        <li>Terminal access</li>
+        <li>Basic command line knowledge</li>
+    </ul>
+
+    <hr>
+
+    <h2>Install Terraform</h2>
+    <p>Check if Terraform is installed:</p>
+    <pre><code>terraform version</code></pre>
+    <p>If not installed, on Mac run:</p>
+    <pre><code>brew install terraform</code></pre>
+    <p>Verify installation:</p>
+    <pre><code>terraform version</code></pre>
+
+    <hr>
+
+    <h2>Create AWS Credentials</h2>
+    <ol>
+        <li>Go to AWS Console</li>
+        <li>Navigate to IAM → Users</li>
+        <li>Create a new user:
+            <ul>
+                <li>Name: terraform-user</li>
+                <li>Access type: Programmatic access</li>
+            </ul>
+        </li>
+        <li>Attach permissions:
+            <ul>
+                <li>For testing: AdministratorAccess</li>
+                <li>For production: use least privilege</li>
+            </ul>
+        </li>
+        <li>Save:
+            <ul>
+                <li>Access Key</li>
+                <li>Secret Key</li>
+            </ul>
+        </li>
+    </ol>
+
+    <h2>Install AWS CLI</h2>
+    <p>Check if installed:</p>
+    <pre><code>aws --version</code></pre>
+    <p>If not installed:</p>
+    <pre><code>brew install awscli</code></pre>
+
+    <h2>Configure AWS CLI</h2>
+    <p>Run:</p>
+    <pre><code>aws configure</code></pre>
+    <p>Enter:</p>
+    <ul>
+        <li>Access Key</li>
+        <li>Secret Key</li>
+        <li>Region (e.g. us-east-1)</li>
+        <li>Output format (json)</li>
+    </ul>
+    <p>Test configuration:</p>
+    <pre><code>aws sts get-caller-identity</code></pre>
+
+    <hr>
+
+    <h2>Create Terraform Project</h2>
+    <p>Create a directory:</p>
+    <pre><code>mkdir tf-day2 && cd tf-day2</code></pre>
+    <p>Create a file called <code>main.tf</code>:</p>
+    <pre><code>provider "aws" {
+  region = "us-east-1"
+}
+
+resource "aws_vpc" "main" {
+  cidr_block = "10.0.0.0/16"
+}</code></pre>
+
+    <hr>
+
+    <h2>Initialize Terraform</h2>
+    <pre><code>terraform init</code></pre>
+
+    <hr>
+
+    <h2>Preview Changes</h2>
+    <pre><code>terraform plan</code></pre>
+
+    <hr>
+
+    <h2>Apply Configuration</h2>
+    <pre><code>terraform apply</code></pre>
+    <p>Type <code>yes</code> when prompted.</p>
+
+    <hr>
+
+    <h2>Destroy Resources</h2>
+    <p>To avoid unnecessary costs:</p>
+    <pre><code>terraform destroy</code></pre>
+
+    <hr>
+
+    <h2>Common Issues</h2>
+    <ul>
+        <li>Invalid AWS credentials</li>
+        <li>Insufficient IAM permissions</li>
+        <li>Forgetting <code>terraform init</code></li>
+        <li>Leaving resources running</li>
+    </ul>
+
+    <hr>
+
+    <h2>Conclusion</h2>
+    <p>You now have a working setup for provisioning AWS infrastructure using Terraform. This forms the foundation for more advanced workflows.</p>
+</body>
+</html>
