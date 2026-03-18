@@ -12,10 +12,12 @@
         ul { margin: 1rem 0; }
         li { margin-bottom: 0.5rem; }
         hr { margin: 2rem 0; border: 0; border-top: 1px solid #ccc; }
+        .center { text-align: center; margin-top: 20px; }
+        img { max-width: 100%; height: auto; margin-bottom: 20px; }
     </style>
 </head>
 <body>
-    <h1>Terraform + AWS CLI Setup (No Fluff)</h1>
+    <h1>Terraform + AWS CLI Setup</h1>
 
     <h2>Introduction</h2>
     <p>This step by step instruction guide is meant to walk you through setting up Terraform with AWS CLI so that you can provision infrastructure from code instead of manually clicking through an AWS console. Minimize the manual stuff, automate the actual stuff.</p>
@@ -136,6 +138,18 @@ resource "aws_vpc" "main" {
         <li>Forgetting <code>terraform init</code></li>
         <li>Leaving resources running</li>
     </ul>
+
+    <hr>
+
+    <h2>Setup Screenshots</h2>
+
+    <div class="center">
+        <p><strong>AWS CLI Configuration</strong></p>
+        <img src="images/day2setup.png" alt="Validating configurations are well set up">
+
+        <p><strong>Terraform Setup</strong></p>
+        <img src="images/day2config.png" alt="Aws config is well Setup">
+    </div>
 
     <hr>
 
