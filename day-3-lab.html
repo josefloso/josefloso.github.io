@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Terraform AWS Setup Guide</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 0 20px;
+      color: #222;
+    }
+    h1, h2, h3 {
+      color: #111;
+    }
+    code, pre {
+      background: #f4f4f4;
+      padding: 10px;
+      display: block;
+      overflow-x: auto;
+      border-radius: 5px;
+    }
+    img {
+      max-width: 100%;
+      border-radius: 5px;
+      margin: 10px 0 20px 0;
+      border: 1px solid #ddd;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 20px 0;
+    }
+    table, th, td {
+      border: 1px solid #ccc;
+    }
+    th, td {
+      padding: 10px;
+      text-align: left;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>Terraform AWS Setup Guide</h1>
+
+  <p>
+    Terraform lets you define infrastructure as code. Instead of clicking around in AWS, you write configuration files and Terraform provisions everything for you.
+  </p>
+
+  <h2>Prerequisites</h2>
+  <ul>
+    <li>Terraform installed (<code>terraform -version</code>)</li>
+    <li>AWS account</li>
+    <li>IAM user with access keys</li>
+    <img src="images/aws_terraform_architecture.drawio.png" alt="Infrastructure Architecture" />
+  </ul>
+
+  <h2>Step 1: Set up the AWS Provider</h2>
+
+  <pre><code>provider "aws" {
+  region = "us-east-1"
+}</code></pre>
+
+  <h2>Step 2: Configure AWS Credentials</h2>
+
+  <pre><code>export AWS_ACCESS_KEY_ID="your-access-key"
+export AWS_SECRET_ACCESS_KEY="your-secret-key"
+export AWS_DEFAULT_REGION="us-east-1"</code></pre>
+
+  <h2>Step 3: Initialize Terraform</h2>
+
+  <pre><code>terraform init</code></pre>
+
+  <p>What it does:</p>
+  <ul>
+    <li>Downloads required providers</li>
+    <li>Prepares the working directory</li>
+  </ul>
+
+  <img src="images/init.png" alt="Terraform init success" />
+  <img src="images/missinginit.png" alt="Missing provider error" />
+
+  <h2>Step 4: Add a Resource (S3 Bucket)</h2>
+
+  <pre><code>resource "aws_s3_bucket" "day3_bucket" {
+  bucket = "tf-day3-bucket-joseph"
+
+  tags = {
+    Name    = "day3-s3-bucket"
+    Purpose = "Terraform Lab"
+  }
+}</code></pre>
+
+  <h2>Step 5: Plan the Deployment</h2>
+
+  <pre><code>terraform plan</code></pre>
+
+  <p>What it does:</p>
+  <ul>
+    <li>Shows what Terraform will create</li>
+    <li>Does not make changes</li>
+  </ul>
+
+  <img src="images/plan.png" alt="Terraform plan output" />
+  <img src="images/plan1.png" alt="Terraform plan detailed output" />
+
+  <h2>Step 6: Apply the Configuration</h2>
+
+  <pre><code>terraform apply</code></pre>
+
+  <p>Creates the resources after confirmation.</p>
+
+  <img src="images/applycomplete.png" alt="Terraform apply completed" />
+
+  <h2>Step 7: Clean Up</h2>
+
+  <pre><code>terraform destroy</code></pre>
+
+  <p>This removes all created infrastructure.</p>
+
+  <img src="images/destroy.png" alt="Terraform destroy output" />
+
+  <h2>Key Terraform Commands Summary</h2>
+
+  <table>
+    <tr>
+      <th>Command</th>
+      <th>Purpose</th>
+    </tr>
+    <tr>
+      <td>terraform init</td>
+      <td>Initialize project</td>
+    </tr>
+    <tr>
+      <td>terraform plan</td>
+      <td>Preview changes</td>
+    </tr>
+    <tr>
+      <td>terraform apply</td>
+      <td>Create/update infrastructure</td>
+    </tr>
+    <tr>
+      <td>terraform destroy</td>
+      <td>Delete all resources</td>
+    </tr>
+  </table>
+
+  <h2>Conclusion</h2>
+
+  <p>
+    Terraform simplifies infrastructure by turning it into code. Once you understand providers, resources, and core commands, you can reliably deploy and manage infrastructure.
+  </p>
+
+</body>
+</html>
