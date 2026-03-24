@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Terraform State Isolation</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      margin: 40px;
+      max-width: 900px;
+      color: #222;
+    }
+    h1, h2, h3 {
+      color: #111;
+    }
+    pre {
+      background: #f4f4f4;
+      padding: 12px;
+      overflow-x: auto;
+      border-radius: 6px;
+    }
+    code {
+      background: #f4f4f4;
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+    hr {
+      margin: 40px 0;
+    }
+    ul {
+      margin-left: 20px;
+    }
+    .section {
+      margin-bottom: 40px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>State Isolation: Workspaces vs File Layouts — When to Use Each</h1>
+
+  <div class="section">
+    <h2>Workspace Setup</h2>
+    <p>Output of:</p>
+    <pre><code>terraform workspace list</code></pre>
+
+    <pre><code>
+* dev
+  staging
+  prod
+    </code></pre>
+  </div>
+
+  <div class="section">
+    <h2>S3 State File Paths per Workspace</h2>
+    <p>Assuming backend config:</p>
+    <pre><code>key = "env:/terraform.tfstate"</code></pre>
+
+    <p>Actual paths in S3:</p>
+    <pre><code>
+env:/dev/terraform.tfstate
+env:/staging/terraform.tfstate
+env:/prod/terraform.tfstate
+    </code></pre>
+
+    <p>Each workspace automatically prefixes the state path with its name.</p>
+  </div>
+
+  <hr/>
+
+  <div class="section">
+    <h2>Workspace Configuration Code</h2>
+    <pre><code>
+resource "aws_instance" "example" {
+  ami           = "ami-12345678"
+
+  instance_type = terraform.workspace == "prod" ? "t3.large" : "t3.micro"
+
+  tags = {
+    Name = "${terraform.workspace}-instance"
+  }
+}
+    </code></pre>
+
+    <p>This makes:</p>
+    <ul>
+      <li>dev → t3.micro</li>
+      <li>staging → t3.micro</li>
+      <li>prod → t3.large</li>
+    </ul>
+  </div>
+
+  <hr/>
+
+  <div class="section">
+    <h2>File Layout Structure</h2>
+
+    <pre><code>
+terraform/
+├── dev/
+│   ├── main.tf
+│   ├── backend.tf
+│   └── variables.tf
+├── staging/
+│   ├── main.tf
+│   ├── backend.tf
+│   └── variables.tf
+├── prod/
+│   ├── main.tf
+│   ├── backend.tf
+│   └── variables.tf
+└── modules/
+    └── app/
+        └── main.tf
+    </code></pre>
+  </div>
+
+  <hr/>
+
+  <div class="section">
+    <h2>Backend Configs</h2>
+
+    <h3>dev/backend.tf</h3>
+    <pre><code>
+terraform {
+  backend "s3" {
+    bucket         = "tf-state-bucket"
+    key            = "dev/terraform.tfstate"
+    region         = "us-east-1"
+    dynamodb_table = "terraform-locks"
+  }
+}
+    </code></pre>
+
+    <h3>prod/backend.tf</h3>
+    <pre><code>
+terraform {
+  backend "s3" {
+    bucket         = "tf-state-bucket"
+    key            = "prod/terraform.tfstate"
+    region         = "us-east-1"
+    dynamodb_table = "terraform-locks"
+  }
+}
+    </code></pre>
+
+    <p><strong>Why key paths matter:</strong></p>
+    <ul>
+      <li>Each environment has a separate state file</li>
+      <li>No accidental overlap</li>
+      <li>No switching environments without changing directories</li>
+    </ul>
+  </div>
+
+  <hr/>
+
+  <div class="section">
+    <h2>Remote State Data Source</h2>
+
+    <h3>Configuration</h3>
+    <pre><code>
+data "terraform_remote_state" "network" {
+  backend = "s3"
+
+  config = {
+    bucket = "tf-state-bucket"
+    key    = "dev/network/terraform.tfstate"
+    region = "us-east-1"
+  }
+}
+    </code></pre>
+
+    <h3>Referencing an output</h3>
+    <pre><code>
+resource "aws_instance" "example" {
+  subnet_id = data.terraform_remote_state.network.outputs.subnet_id
+}
+    </code></pre>
+  </div>
+
+  <hr/>
+
+  <div class="section">
+    <h2>Workspace vs File Layout Comparison</h2>
+
+    <h3>Which provides stronger environment isolation?</h3>
+    <p><strong>File layout.</strong></p>
+    <ul>
+      <li>Separate directories</li>
+      <li>Separate backend configs</li>
+      <li>No shared execution context</li>
+    </ul>
+
+    <h3>Which is easier to accidentally misconfigure?</h3>
+    <p><strong>Workspaces.</strong></p>
+    <ul>
+      <li>You can be in the wrong workspace</li>
+      <li>Same code, different outcomes</li>
+    </ul>
+
+    <h3>Which scales better across a large team?</h3>
+    <p><strong>File layout.</strong></p>
+    <ul>
+      <li>Clear boundaries per environment</li>
+      <li>Easier ownership</li>
+      <li>CI/CD friendly</li>
+    </ul>
+
+    <h3>Which would I use in production?</h3>
+    <p><strong>File layout.</strong></p>
+  </div>
+
+  <hr/>
+
+  <div class="section">
+    <h2>State Locking in Multi-Environment Context</h2>
+
+    <p>DynamoDB locking behavior:</p>
+    <ul>
+      <li>Lock is tied to the state file key</li>
+    </ul>
+
+    <p>With workspaces:</p>
+    <pre><code>
+env:/dev/terraform.tfstate → separate lock
+env:/prod/terraform.tfstate → separate lock
+    </code></pre>
+
+    <p>Conclusion:</p>
+    <ul>
+      <li>No cross-workspace locking</li>
+      <li>Locking is scoped to state path</li>
+    </ul>
+  </div>
+
+  <hr/>
+
+  <div class="section">
+    <h2>Chapter 3 Learnings</h2>
+
+    <h3>What is terraform_remote_state?</h3>
+    <p>It allows one Terraform configuration to read outputs from another configuration’s state file.</p>
+
+    <h3>Limitations</h3>
+    <ul>
+      <li>Tight coupling between configurations</li>
+      <li>No fine-grained access control</li>
+      <li>Breaks if state location changes</li>
+      <li>Not suitable for sensitive data sharing</li>
+    </ul>
+  </div>
+
+  <hr/>
+
+  <div class="section">
+    <h2>Challenges and Fixes</h2>
+
+    <h3>Issue 1: Wrong workspace applied</h3>
+    <p>Fix:</p>
+    <pre><code>terraform workspace show</code></pre>
+
+    <h3>Issue 2: Backend reinitialization errors</h3>
+    <p>Fix:</p>
+    <pre><code>terraform init -reconfigure</code></pre>
+
+    <h3>Issue 3: Confusing state paths</h3>
+    <p>Fix:</p>
+    <pre><code>env:/&lt;workspace&gt;/terraform.tfstate</code></pre>
+
+    <h3>Issue 4: Directory duplication</h3>
+    <p>Fix:</p>
+    <ul>
+      <li>Use shared modules</li>
+      <li>Accept backend duplication for isolation</li>
+    </ul>
+  </div>
+
+  <hr/>
+
+  <div class="section">
+    <h2>Final Verdict</h2>
+
+    <p><strong>Workspaces:</strong></p>
+    <ul>
+      <li>Fast</li>
+      <li>Simple</li>
+      <li>Flexible</li>
+      <li>Risk of mistakes</li>
+    </ul>
+
+    <p><strong>File layouts:</strong></p>
+    <ul>
+      <li>Safer</li>
+      <li>More structured</li>
+      <li>Better for teams</li>
+    </ul>
+
+    <p><strong>Recommendation:</strong> Use file layouts for production. Use workspaces for experiments or small setups.</p>
+  </div>
+
+</body>
+</html>

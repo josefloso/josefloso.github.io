@@ -1,12 +1,12 @@
-terraform {
-  backend "s3" {
-    bucket         = "josef-terraform-state-bucket"
-    key            = "global/s3/terraform.tfstate"
-    region         = "eu-central-1"
-    dynamodb_table = "terraform-state-locks"
-    encrypt        = true
-  }
-}
+# terraform {
+# #   backend "s3" {
+# #     bucket         = "josef-terraform-state-bucket"
+# #     key            = "global/s3/terraform.tfstate"
+# #     region         = "eu-west-1"
+# #     dynamodb_table = "terraform-state-locks"
+# #     encrypt        = true
+# #   }
+# }
 
 
 provider "aws" {
