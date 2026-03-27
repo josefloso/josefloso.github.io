@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reusable Web Server Cluster with Terraform</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 0 20px;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+    h1, h2, h3 {
+      color: #222;
+    }
+    pre {
+      background: #272822;
+      color: #f8f8f2;
+      padding: 15px;
+      overflow-x: auto;
+      border-radius: 5px;
+    }
+    code {
+      font-family: monospace;
+    }
+    img {
+      max-width: 100%;
+      margin: 20px 0;
+      border-radius: 6px;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <h1>Building a Reusable Web Server Cluster with Terraform Modules</h1>
+
+    <p>
+      I’ve been working on structuring my Terraform code properly instead of just making things work.
+      This setup is a simple web server cluster behind an Application Load Balancer,
+      but the goal wasn’t just to deploy it — it was to make it reusable.
+    </p>
+
+    <h2>What I Built</h2>
+    <ul>
+      <li>Application Load Balancer (ALB)</li>
+      <li>Target Group with health checks</li>
+      <li>Auto Scaling Group</li>
+      <li>EC2 instances running Apache</li>
+      <li>Security groups for ALB and instances</li>
+    </ul>
+
+    <p>Everything runs in the default VPC for simplicity.</p>
+
+    <pre><code>
+Internet → ALB → Target Group → Auto Scaling Group → EC2 (Apache)
+    </code></pre>
+
+    <h2>The Problem with Hardcoding</h2>
+    <p>Originally, the AMI was hardcoded:</p>
+
+    <pre><code>
+image_id = "ami-0cebfb1f908092578"
+    </code></pre>
+
+    <p>This breaks portability and becomes outdated quickly.</p>
+
+    <h2>Fixing the AMI Properly</h2>
+    <p>I switched to using AWS SSM to dynamically fetch the latest Amazon Linux AMI:</p>
+
+    <pre><code>
+data "aws_ssm_parameter" "amazon_linux" {
+  name = "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64"
+}
+    </code></pre>
+
+    <pre><code>
+image_id = data.aws_ssm_parameter.amazon_linux.value
+    </code></pre>
+
+    <h2>Launch Template</h2>
+    <p>The launch template installs Apache using Amazon Linux:</p>
+
+    <pre><code>
+#!/bin/bash
+dnf update -y
+dnf install -y httpd
+systemctl start httpd
+systemctl enable httpd
+echo "&lt;h1&gt;Hello from cluster&lt;/h1&gt;" &gt; /var/www/html/index.html
+    </code></pre>
+
+    <h2>Load Balancer Setup</h2>
+    <p>The ALB listens on port 80 and forwards traffic:</p>
+
+    <pre><code>
+resource "aws_lb_listener" "http" {
+  port     = 80
+  protocol = "HTTP"
+}
+    </code></pre>
+
+    <h2>Auto Scaling Group</h2>
+    <p>The ASG ensures instances are always running:</p>
+
+    <pre><code>
+resource "aws_autoscaling_group" "web" {
+  min_size = 2
+  max_size = 5
+}
+    </code></pre>
+
+    <h2>Security Groups</h2>
+    <p>
+      The ALB allows HTTP from anywhere, and the instance security group allows traffic on the app port.
+      This is fine for testing, but not for production.
+    </p>
+
+    <h2>Making It Reusable</h2>
+    <p>The setup is parameterized using variables:</p>
+    <ul>
+      <li>cluster_name</li>
+      <li>instance_type</li>
+      <li>server_port</li>
+      <li>min_size / max_size</li>
+    </ul>
+
+    <h2>What I’d Improve Next</h2>
+    <ul>
+      <li>Add HTTPS (ACM)</li>
+      <li>Restrict security groups</li>
+      <li>Use private subnets</li>
+      <li>Add scaling policies</li>
+    </ul>
+
+    <h2>Final Thoughts</h2>
+    <p>
+      This setup is simple, but it forces better structure.
+      The main takeaway is not to hardcode things that AWS already manages.
+    </p>
+
+    <h2>Screenshots</h2>
+
+    <p>Terraform Apply Output:</p>
+    <img src="images/tfplan.png" alt="Terraform apply output">
+
+    <p>Load Balancer in Browser:</p>
+    <img src="images/webserverdev.png" alt="ALB browser output">
+
+    <p>Target Group Health:</p>
+    <img src="images/lbs.png" alt="Target group health">
+
+  </div>
+</body>
+</html>
