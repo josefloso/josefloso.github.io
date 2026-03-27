@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mastering Loops and Conditionals in Terraform — josefloso</title>
+
+  <!-- Prism.js for syntax highlighting -->
+  <link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-okaidia.css" rel="stylesheet" />
+
+  <style>
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #1e1e1e;
+      color: #e1e1e1;
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 0 20px;
+      line-height: 1.7;
+    }
+    h1, h2, h3 {
+      color: #ffffff;
+    }
+    a {
+      color: #ffa500;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    pre {
+      border-radius: 6px;
+      overflow-x: auto;
+      padding: 15px;
+    }
+    code {
+      font-family: monospace;
+      font-size: 0.95em;
+    }
+    img {
+      max-width: 100%;
+      border-radius: 6px;
+      margin: 20px 0;
+    }
+    .container {
+      background: #2d2d2d;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Mastering Loops and Conditionals in Terraform</h1>
+
+    <p>
+      This is my own exploration of how Terraform uses loops and conditional expressions
+      to make infrastructure code dynamic, reusable, and maintainable. Loops let you
+      scale your resource definitions without repeating blocks, and conditionals let
+      you control what Terraform does based on logic and variable values.  [oai_citation:1‡DEV Community](https://dev.to/patdevops/mastering-loops-and-conditionals-in-terraform-5a16?utm_source=chatgpt.com)
+    </p>
+
+    <h2>Why Loops Matter</h2>
+    <p>
+      When infrastructure grows, repeating similar blocks becomes a mess. Terraform
+      gives you constructs that handle repetition without duplicating code.  [oai_citation:2‡DEV Community](https://dev.to/patdevops/mastering-loops-and-conditionals-in-terraform-5a16?utm_source=chatgpt.com)
+    </p>
+
+    <h3>`count` Meta‑Argument</h3>
+    <p>
+      The simplest looping method is using <code>count</code>. It tells Terraform how
+      many copies of a resource to create.
+    </p>
+    <pre><code class="language-hcl">
+resource "aws_instance" "web" {
+  count         = 3
+  ami           = "ami-12345678"
+  instance_type = "t2.micro"
+}
+    </code></pre>
+    <p>
+      With <code>count = 3</code>, Terraform creates three instances automatically.  [oai_citation:3‡DEV Community](https://dev.to/patdevops/mastering-loops-and-conditionals-in-terraform-5a16?utm_source=chatgpt.com)
+    </p>
+
+    <h3>`for_each` for Lists and Maps</h3>
+    <p>
+      For more control, especially with maps or lists, use <code>for_each</code>. This
+      loops over each item and lets you reference both keys and values.
+    </p>
+    <pre><code class="language-hcl">
+variable "instances" {
+  type = map(string)
+  default = {
+    "app1" = "t2.micro"
+    "app2" = "t2.small"
+  }
+}
+
+resource "aws_instance" "web" {
+  for_each      = var.instances
+  instance_type = each.value
+  ami           = "ami-12345678"
+
+  tags = {
+    Name = each.key
+  }
+}
+    </code></pre>
+    <p>
+      Each instance gets a unique name and type based on the map entries.  [oai_citation:4‡DEV Community](https://dev.to/patdevops/mastering-loops-and-conditionals-in-terraform-5a16?utm_source=chatgpt.com)
+    </p>
+
+    <h3>`for` Expressions</h3>
+    <p>
+      Terraform also provides list and map comprehensions using <code>for</code>, letting
+      you transform collections without resource blocks.
+    </p>
+    <pre><code class="language-hcl">
+locals {
+  names = ["dev", "test", "prod"]
+  tags  = [for n in local.names : "${n}-env"]
+}
+    </code></pre>
+
+    <h2>Using Conditionals</h2>
+    <p>
+      Conditionals let Terraform decide values based on a logical expression. The
+      syntax is simple:
+    </p>
+    <pre><code class="language-hcl">
+condition ? true_value : false_value
+    </code></pre>
+
+    <h3>Conditional Attributes</h3>
+    <p>
+      You can use conditionals anywhere Terraform accepts expressions. For example,
+      selecting an instance type based on environment:
+    </p>
+    <pre><code class="language-hcl">
+resource "aws_instance" "example" {
+  instance_type = var.is_prod ? "t3.large" : "t3.micro"
+  ami           = "ami-12345678"
+}
+    </code></pre>
+
+    <h3>Conditional Resource Creation</h3>
+    <p>
+      Terraform doesn’t skip resources dynamically, but you can combine a conditional
+      with <code>count</code> to control creation:
+    </p>
+    <pre><code class="language-hcl">
+resource "aws_instance" "optional" {
+  count = var.enable_instance ? 1 : 0
+  ami   = "ami-12345678"
+}
+    </code></pre>
+
+    <p>
+      Setting <code>count = 0</code> means Terraform creates no instances of that
+      resource.  [oai_citation:5‡DEV Community](https://dev.to/patdevops/mastering-loops-and-conditionals-in-terraform-5a16?utm_source=chatgpt.com)
+    </p>
+
+    <h2>Why It Matters</h2>
+    <p>
+      Using loops and conditionals keeps your Terraform code clean and flexible. Instead
+      of manually writing repeated blocks, you define patterns and let Terraform handle
+      repetition and logic. This makes configurations easier to maintain, reduces errors,
+      and adapts automatically to changing environments like dev, staging, and prod.  [oai_citation:6‡DEV Community](https://dev.to/patdevops/mastering-loops-and-conditionals-in-terraform-5a16?utm_source=chatgpt.com)
+    </p>
+
+
+
+
+  <!-- Prism.js Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-hcl.min.js"></script>
+</body>
+</html>
