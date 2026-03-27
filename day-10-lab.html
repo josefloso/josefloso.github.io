@@ -64,7 +64,7 @@
     <h2>Why Loops Matter</h2>
     <p>
       When infrastructure grows, repeating similar blocks becomes a mess. Terraform
-      gives you constructs that handle repetition without duplicating code.  [oai_citation:2‡DEV Community](https://dev.to/patdevops/mastering-loops-and-conditionals-in-terraform-5a16?utm_source=chatgpt.com)
+      gives you constructs that handle repetition without duplicating code.  
     </p>
 
     <h3>`count` Meta‑Argument</h3>
@@ -80,7 +80,7 @@ resource "aws_instance" "web" {
 }
     </code></pre>
     <p>
-      With <code>count = 3</code>, Terraform creates three instances automatically.  [oai_citation:3‡DEV Community](https://dev.to/patdevops/mastering-loops-and-conditionals-in-terraform-5a16?utm_source=chatgpt.com)
+      With <code>count = 3</code>, Terraform creates three instances automatically.  
     </p>
 
     <h3>`for_each` for Lists and Maps</h3>
@@ -108,7 +108,7 @@ resource "aws_instance" "web" {
 }
     </code></pre>
     <p>
-      Each instance gets a unique name and type based on the map entries.  [oai_citation:4‡DEV Community](https://dev.to/patdevops/mastering-loops-and-conditionals-in-terraform-5a16?utm_source=chatgpt.com)
+      Each instance gets a unique name and type based on the map entries.  
     </p>
 
     <h3>`for` Expressions</h3>
@@ -158,7 +158,7 @@ resource "aws_instance" "optional" {
 
     <p>
       Setting <code>count = 0</code> means Terraform creates no instances of that
-      resource.  [oai_citation:5‡DEV Community](https://dev.to/patdevops/mastering-loops-and-conditionals-in-terraform-5a16?utm_source=chatgpt.com)
+      resource.  
     </p>
 
     <h2>Why It Matters</h2>
@@ -166,7 +166,7 @@ resource "aws_instance" "optional" {
       Using loops and conditionals keeps your Terraform code clean and flexible. Instead
       of manually writing repeated blocks, you define patterns and let Terraform handle
       repetition and logic. This makes configurations easier to maintain, reduces errors,
-      and adapts automatically to changing environments like dev, staging, and prod.  [oai_citation:6‡DEV Community](https://dev.to/patdevops/mastering-loops-and-conditionals-in-terraform-5a16?utm_source=chatgpt.com)
+      and adapts automatically to changing environments like dev, staging, and prod.  
     </p>
 
 
