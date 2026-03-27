@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Advanced Terraform Modules — Day 9</title>
+
+  <!-- Prism.js Dark Theme -->
+  <link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-okaidia.css" rel="stylesheet" />
+
+  <style>
+    body {
+      font-family: "Segoe UI", Roboto, Arial, sans-serif;
+      background-color: #1e1e1e;
+      color: #dcdcdc;
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 0 20px;
+      line-height: 1.7;
+    }
+    h1, h2, h3 {
+      color: #ffffff;
+    }
+    a {
+      color: #ffa500;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    img {
+      max-width: 100%;
+      margin: 20px 0;
+      border-radius: 6px;
+    }
+    .container {
+      background: #2d2d2d;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    }
+    ul, ol {
+      margin-left: 20px;
+    }
+    pre {
+      border-radius: 6px;
+      overflow-x: auto;
+      padding: 15px;
+    }
+    code {
+      font-family: monospace;
+      font-size: 0.95em;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Advanced Terraform Modules — Day 9</h1>
+
+    <p>This is my notes and implementation for <strong>Day 9: Advanced Terraform Modules</strong> from the 30-day Terraform challenge. Originally by <strong>LydiahLaw</strong>, but this version is by <strong>josefloso</strong>.</p>
+
+    <h2>Module Structure</h2>
+    <p>The challenge focuses on building reusable Terraform modules with proper inputs, outputs, and calling configurations.</p>
+
+    <h3>Directory Layout</h3>
+    <pre><code class="language-bash">
+Day-09-Advanced-Terraform-Modules/
+├── modules/
+│   └── example-module/
+│       ├── main.tf
+│       ├── variables.tf
+│       └── outputs.tf
+├── dev/
+│   └── main.tf
+├── prod/
+│   └── main.tf
+└── README.md
+    </code></pre>
+
+    <h2>Goals</h2>
+    <ul>
+      <li>Understand the difference between root and child modules</li>
+      <li>Parameterize modules to make them reusable across environments</li>
+      <li>Use outputs to expose important information (e.g., ALB DNS, instance IDs)</li>
+      <li>Refactor existing Terraform code into proper module structure</li>
+    </ul>
+
+    <h2>Key Learnings</h2>
+    <ul>
+      <li>Child modules are like functions — reusable, encapsulated units of Terraform configuration.</li>
+      <li>Root modules orchestrate child modules and provide environment-specific variable values.</li>
+      <li>Using <code>terraform init</code> downloads and prepares module sources.</li>
+      <li>Outputs from child modules are captured in the state file and can be referenced by other modules or root configurations.</li>
+    </ul>
+
+    <h2>Calling the Module</h2>
+    <pre><code class="language-hcl">
+module "webserver" {
+  source        = "../modules/example-module"
+  cluster_name  = "dev-cluster"
+  instance_type = "t3.micro"
+  min_size      = 1
+  max_size      = 2
+}
+    </code></pre>
+
+    <h2>Outputs</h2>
+    <ul>
+      <li>ALB DNS name to access the cluster</li>
+      <li>Instance IDs and security group IDs for reference</li>
+    </ul>
+
+    <h2>Refactoring Observations</h2>
+    <ul>
+      <li>Decided which variables to expose vs. hardcode inside the module</li>
+      <li>Kept core resources the same while making configuration reusable</li>
+      <li>Added safe defaults for easier dev use</li>
+    </ul>
+
+    <h2>Challenges</h2>
+    <ul>
+      <li>Relative paths for module sources</li>
+      <li>Variable type mismatches</li>
+      <li>Ensuring instances became healthy after deployment</li>
+    </ul>
+
+    <h2>Next Steps</h2>
+    <ul>
+      <li>Add HTTPS via ACM</li>
+      <li>Restrict security group access</li>
+      <li>Add scaling policies and monitoring</li>
+    </ul>
+
+    <p>All Terraform code, outputs, and screenshots are organized for reuse and learning purposes.</p>
+  </div>
+
+  <!-- Prism.js -->
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-hcl.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-bash.min.js"></script>
+</body>
+</html>
